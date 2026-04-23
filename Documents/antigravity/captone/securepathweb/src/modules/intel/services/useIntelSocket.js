@@ -6,7 +6,10 @@ export const useIntelSocket = (onReportReceived) => {
     const [connected, setConnected] = useState(false);
 
     useEffect(() => {
-        const socket = new SockJS('http://localhost:8080/ws');
+        const backendBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+        const socketUrl = `${backendBaseUrl}/ws`;
+
+        const socket = new SockJS(socketUrl);
         const client = new Client({
             webSocketFactory: () => socket,
             debug: (str) => console.log('STOMP:', str),
@@ -14,7 +17,6 @@ export const useIntelSocket = (onReportReceived) => {
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,
             onConnect: () => {
-                console.log('Connected to Intel WebSocket');
                 setConnected(true);
                 client.subscribe('/topic/intel', (message) => {
                     if (message.body) {
@@ -24,7 +26,6 @@ export const useIntelSocket = (onReportReceived) => {
                 });
             },
             onDisconnect: () => {
-                console.log('Disconnected from Intel WebSocket');
                 setConnected(false);
             },
         });
